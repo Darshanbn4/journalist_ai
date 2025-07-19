@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "brightdata-scraper": {
+      "command": "npx",
+      "args": ["@brightdata/mcp"],
+      "env": {
+        "API_TOKEN": "${API_TOKEN}",
+        "WEB_UNLOCKER_ZONE": "${WEB_UNLOCKER_ZONE}",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "scrape_url",
+        "search_reddit",
+        "get_reddit_posts"
+      ]
+    }
+  }
+}

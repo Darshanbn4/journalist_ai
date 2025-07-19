@@ -7,7 +7,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.prebuilt import create_react_agent
-from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 import os
 from tenacity import (
@@ -34,7 +34,12 @@ class MCPOverloadedError(Exception):
 
 mcp_limiter = AsyncLimiter(1, 15)
 
-model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
+# Configure Gemini model for LangChain
+model = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro",
+    google_api_key=os.getenv("GEMINI_API_KEY"),
+    temperature=0.3
+)
 
 server_params = StdioServerParameters(
     command="npx",

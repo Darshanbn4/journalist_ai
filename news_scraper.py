@@ -4,8 +4,6 @@ from typing import Dict, List
 
 from aiolimiter import AsyncLimiter
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-from langchain_anthropic import ChatAnthropic
-from langgraph.prebuilt import create_react_agent
 from dotenv import load_dotenv
 
 from utils import (
@@ -13,12 +11,9 @@ from utils import (
     scrape_with_brightdata,
     clean_html_to_text,
     extract_headlines,
-    summarize_with_anthropic_news_script,
+    summarize_with_gemini_news_script,
     summarize_with_ollama
 )
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from langchain_mcp_adapters.tools import load_mcp_tools
 
 load_dotenv()
 
@@ -41,13 +36,20 @@ class NewsScraper:
                     search_html = scrape_with_brightdata(urls[topic])
                     clean_text = clean_html_to_text(search_html)
                     headlines = extract_headlines(clean_text)
-                    summary = summarize_with_anthropic_news_script(
-                        api_key=os.getenv("ANTHROPIC_API_KEY"),
-                        headlines=headlines
-                    )
-                    results[topic] = summary
+                    
+                    if headlines.strip():
+                        summary = summarize_with_gemini_news_script(
+                            api_key=os.getenv("GEMINI_API_KEY"),
+                            headlines=headlines
+                        )
+                        results[topic] = summary
+                    else:
+                        results[topic] = f"No headlines found for topic: {topic}"
+                        
                 except Exception as e:
-                    results[topic] = f"Error: {str(e)}"
+                    print(f"Error scraping news for {topic}: {str(e)}")
+                    results[topic] = f"Unable to fetch news for {topic}. Please try again later."
+                    
                 await asyncio.sleep(1)  # Avoid overwhelming news sites
 
-        return {"news_analysis" : results}
+        return {"news_analysis": results}
